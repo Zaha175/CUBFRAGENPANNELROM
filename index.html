@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPU Fragen & Antworten Panel</title>
+    <!-- Google Fonts für Orbitron -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #000;
+            font-family: 'Orbitron', sans-serif; /* Neue Schrift */
+            margin: 0;
+            padding: 0;
+            color: #00ffe0;
+        }
+
+        /* Top-Leiste im Westworld-Stil */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5em 1em;
+            border-bottom: 2px solid #00ffff;
+            background-color: #050505;
+        }
+
+        .system-indicator {
+            display: flex;
+            align-items: center;
+        }
+        .system-indicator .label {
+            margin-right: 0.5em;
+            font-weight: bold;
+            color: #00ffff;
+        }
+        .status-green {
+            color: #0f0; /* Grün für „OK“ */
+        }
+
+        .controls button {
+            margin-left: 0.5em;
+            background: transparent;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 0.3em 0.6em;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background: #00ffff;
+            color: #000;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            height: calc(100vh - 50px);
+        }
+
+        /* Linke oder rechte Sidebar (Optional) */
+        .sidebar {
+            width: 200px;
+            border-right: 2px solid #00ffff;
+            padding: 1em;
+            background-color: #050505;
+        }
+
+        /* Der Hauptbereich, in dem deine mpu-fragen-log liegt */
+        .content-area {
+            flex: 1;
+            padding: 1em;
+            position: relative;
+        }
+
+        .mpu-fragen-log {
+            position: relative;
+            width: 90%;
+            max-width: 700px;
+            margin: 0 auto;
+            background-image: url('https://cdn.gamma.app/fhpleqvbjim2f32/generated-images/m5jbKxn54d6Q01a4tMJgN.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border: 2px solid #00ffff;
+            height: 80vh;
+            overflow-y: auto;
+            font-size: 0.9em;
+            text-align: left;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        /* Dunkles Overlay */
+        .mpu-fragen-log::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 0;
+        }
+
+        /* Alle Kindelemente der Log über Overlay */
+        .mpu-fragen-log * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Blur-Effekt nur für den Inhalt (optional) */
+        /* .mpu-fragen-log {
+            backdrop-filter: blur(8px);
+        } */
+
+        /* Überschrift */
+        .mpu-fragen-log h3 {
+            color: #00ffff;
+            margin-top: 0;
+            text-shadow: 0 0 5px #00ffff;
+            border-bottom: 1px solid #00ffff;
+            padding-bottom: 0.5em;
+        }
+
+        p.question {
+            font-weight: bold;
+            color: rgba(0, 255, 153, 0.9);
+            text-shadow: 0 0 5px #00ff99;
+            margin-top: 1.5em;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 5px;
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+
+        p.answer {
+            color: rgba(204, 255, 0, 0.9);
+            text-shadow: 0 0 3px #ccff00;
+            margin-left: 1.5em;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 5px;
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+
+        /* Fade-In-Effekt für Fragen und Antworten */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="system-indicator">
+            <span class="label">System Status:</span>
+            <span class="status-green">OK</span>
+        </div>
+        <div class="controls">
+            <button id="pauseBtn">PAUZĂ</button>
+            <button id="resumeBtn">MAI DEPARTE</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <!-- Optionale Sidebar: Icons, Infos, etc. -->
+            <p style="color:#00ffff; font-size:0.8em;">
+                <!-- Platz für futuristische Icons oder Zusatzinfos -->
+                Diagnostics <br>
+                Hosts <br>
+                Behavior Logs <br>
+                ...
+            </p>
+        </div>
+        <div class="content-area">
+            <div class="mpu-fragen-log" id="mpuFragenLog">
+                <h3>MPU Fragen &amp; Antworten</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const mpuFragenLog = document.getElementById('mpuFragenLog');
+            const mpuFragenAntworten = [
+              {
+    "question": "Ce vreți să ne spuneți astăzi, de ce sunteți aici?",
+    "answer": "Sunt aici astăzi pentru a arăta că mi-am asumat întreaga responsabilitate pentru acțiunile mele. Am înțeles că deciziile mele au fost egoiste și periculoase. Vreau să demonstrez că m-am schimbat și că sunt capabil să particip responsabil la trafic. Am înțeles și am interiorizat Regula de Aur:  * Nu fac nimic ilegal, chiar dacă sunt sigur că nu voi fi prins. * Nu acționez egoist, ci mă gândesc și la ceilalți. * Respect legile, pentru că ele sunt acolo pentru siguranța noastră. * Nu vreau să rănesc pe nimeni, pentru că nici eu nu vreau să fiu rănit.  Astăzi stau aici pentru a clarifica faptul că mi-am recunoscut greșelile și sunt gata să fac totul mai bine în viitor."
+  },
+  {
+    "question": "De ce sunt autoritățile îngrijorate cu privire la capacitatea dvs. de a conduce? Sunteți de acord să veniți la MPU?",
+    "answer": "\nDa, sunt de acord, deoarece am condus sub influența alcoolului și am provocat un accident! Aceasta este o infracțiune gravă care mi-a pus viața și pe a altora în pericol.\nClar, de acord! Cine nu este de acord, nu are ce căuta la MPU. Participarea arată înțelegere și disponibilitatea de a se schimba.\n"
+  },
+  {
+    "question": "Descrieți ziua faptei din punctul dvs. de vedere, cu data și ora?",
+    "answer": "\nData: Luni, 27.02.2023\nOra accidentului: 19:25\nConduceam pe strada Nürnberger din Allersberg. Din cauza consumului meu de alcool, am lovit mașina domnului Weinmann de pe partea dreaptă a străzii. S-au produs daune în valoare de aproximativ 13.000 de euro.\nProbă de sânge: La ora 20:50 a fost prelevată o probă de sânge, care a indicat o valoare de 2,02 promile.\nDurata consumului de alcool: De la începutul consumului de alcool până la prelevarea probei de sânge au trecut 29 de ore.\nRetrospectiva consumului:\n * Duminică, 26.02.2023: Ziua mea de naștere, sărbătorită de la ora 17:00 până la ora 02:00 dimineața.\n * Am băut 14 sticle de bere (0,5 litri per sticlă, 5% concentrație de alcool).\n * În plus, am consumat 4 duble de shot-uri de țuică (40 ml, 40 vol.-%).\n * Luni, 27.02.2023: În timpul pauzelor, am consumat un shot dublu și înainte de a merge acasă, încă două beri (câte 0,5 litri).\nConsumul total: În total, în aceste două zile am băut 8 litri de bere și 5 duble de shot-uri de țuică.\nExplicație: Această descriere detaliată arată că am analizat în profunzime comportamentul meu greșit și îmi asum întreaga responsabilitate pentru el.\n"
+  },
+  {
+    "question": "Ați planificat să beți atât de mult în acea zi?",
+    "answer": "\nNu, nu a fost planificat!\nNu am avut control asupra consumului meu, aceasta a fost problema. În timpul petrecerii, controlul mi-a scăpat complet și pur și simplu nu am mai putut să mă opresc din băut.\nExplicație: Atunci când te afli într-o stare de abuz, pierzi controlul asupra consumului tău. Adesea, realizezi abia ulterior că ai o problemă serioasă cu alcoolul și că nu mai ești în stare să te oprești la timp.\n"
+  },
+  {
+    "question": "V-ați gândit că mai puteți conduce? Nu ați simțit influența alcoolului?",
+    "answer": "\n * Situația de dimineață: Inițial, am vrut să dorm mai mult, dar m-am trezit la ora șase dimineața cu dureri de cap. Cu toate acestea, m-am gândit că pot conduce și am mers la muncă.\n * Decizie greșită: Această decizie a fost în mod clar greșită. Am condus sub influența alcoolului și, astfel, am făcut ceva ilegal, ceea ce a dus la un accident.\n * Realizarea de astăzi: Acum înțeleg că siguranța în trafic este prioritară. Ar fi trebuit să sun și să anunț că nu sunt apt de muncă.\n * Regret: Îmi pare sincer rău pentru ceea ce s-a întâmplat.\n * Percepție falsă: Atunci aveam sentimentul că pot conduce în siguranță. Din perspectiva actuală, știu însă că nu a fost cazul.\n"
+  },
+  {
+    "question": "Ce efecte are alcoolul asupra capacității de a conduce?",
+    "answer": "\nReacție slabă: Timpul de reacție se prelungește considerabil, ceea ce este periculos în traficul rutier.\nVedere tunel: Câmpul vizual se îngustează, iar pericolele nu mai sunt detectate la timp.\nProbleme de percepție: Distanțele și vitezele nu mai pot fi evaluate corect.\nFocus pe sine: Atenția este redusă și te concentrezi mai mult pe tine însuți decât pe mediul înconjurător.\nRisc de accidente: Coliziunile cu alți participanți la trafic devin mai probabile.\nAsigurare: În cazul unui accident sub influența alcoolului, nu există asigurare, ceea ce poate avea consecințe financiare grave.\nExplicație: Cine nu știe cum afectează alcoolul condusul, nu are ce căuta la MPU. Această cunoaștere este esențială pentru participarea la traficul rutier.\n"
+  },
+  {
+    "question": "Cât de des ați fost pe drum sub influența alcoolului, fără să fiți prins, și ce concluzie trageți din asta?",
+    "answer": "\nDin păcate, am condus adesea sub influența alcoolului, fără să țin cont cu adevărat de riscuri.\nAm condus de mai multe ori ca în ziua faptei sau cu alcool rezidual în sânge. Da, a fost iresponsabil din partea mea.\nAm subestimat complet riscul pentru mine și pentru alții și m-am gândit că totul va fi bine.\nÎmi pare sincer rău!\nExplicație: Cine nu recunoaște aici că a condus mai des sub influența alcoolului, încearcă să se protejeze. Vrea să se prezinte mai bine decât a fost și să își minimizeze propria vină. Însă, adevărata înțelegere înseamnă să îți recunoști pe deplin greșelile și să îți asumi responsabilitatea.\n"
+  },
+  {
+    "question": "Gânduri, sentimente după faptă?",
+    "answer": "\nÎn ziua de după faptă, situația a fost jenantă și m-am rușinat!\nAm fost nesăbător și egoist. Am recunoscut gravitatea greșelii mele și am înțeles că aș fi putut răni pe cineva în trafic.\nSunt ușurat că nimeni nu a fost rănit!\nMi-am dat seama că am o problemă cu alcoolul și că am reprezentat un pericol considerabil pentru mine și pentru alții.\nExplicație: Este important să recunoști că ai fost un pericol pentru tine și pentru alții. Regula de aur este: „Nu rănesc pe nimeni, pentru că nici eu nu vreau să fiu rănit.” Acest principiu este o înțelegere fundamentală pentru schimbare.\n"
+  },
+  {
+    "question": "Cum v-ați împăcat cu alcoolul după faptă? Cine sau ce v-a motivat să vă schimbați comportamentul? Care a fost punctul de cotitură?",
+    "answer": "\n * După ce mi-am pierdut permisul de conducere, am fost șocat și nu știam ce să fac. În primele două-trei luni am continuat să beau, dar apoi tot mai puțin, până când, pe 12.07.2022, de ziua fiicei mele, am băut ultima bere și am decis să renunț complet la alcool.\n * Punctul de cotitură: Accidentul și fapta au fost un șoc pentru mine. M-am trezit și mi-am dat seama că trebuie să îmi schimb comportamentul - pentru viitorul meu, familia mea și societatea.\n * Am înțeles că am pus în pericol vieți nevinovate și acesta a fost momentul decisiv pentru mine să-mi asum responsabilitatea și să renunț definitiv la acest obicei periculos.\n * Familia mea a fost cea mai mare motivație pentru a menține această schimbare permanentă.\nExplicație: Cine spune că s-a oprit imediat, nu este credibil. Ar fi ca și cum un tren aflat în viteză maximă s-ar opri brusc. Motivația de a te opri nu a fost permisul de conducere, ci viitorul, familia și societatea. MPU nu servește la recuperarea permisului de conducere, ci la corectarea propriului parcurs de viață.\n"
+  },
+  {
+    "question": "A fost ușor să renunțați la alcool?",
+    "answer": "\n * Nu! Nu a fost ușor, deoarece era neobișnuit să nu mai beau ca înainte.\n * Nu am avut simptome fizice de sevraj, dar gândurile legate de alcool au fost foarte prezente la început.\n * În special la zile de naștere, sărbători și petreceri mi-a fost greu să rămân ferm.\n * A fost o luptă interioară continuă, pe care, cu toate acestea, am câștigat-o cu timpul și prin decizia mea clară de a nu mai bea.\nExplicație: Este important să recunoști că renunțarea la alcool a fost grea. Un obicei care s-a dezvoltat de-a lungul anilor nu poate fi oprit cu ușurință. Cine pretinde că a fost ușor, încearcă probabil să se protejeze sau să se prezinte mai bine decât a fost în realitate.\n"
+  },
+  {
+    "question": "De ce nu ați renunțat la alcool mai devreme?",
+    "answer": "\n * Nu mi-am pus niciodată întrebarea dacă ar trebui să renunț la alcool, deoarece nu m-am preocupat de sănătatea mea.\n * Eram de părere că alcoolul mă ajută să gestionez stresul și să faciliteze relațiile sociale.\n * Consumul de alcool la petreceri era considerat normal și nu m-am gândit la consecințele negative pentru corpul meu.\n"
+  },
+  {
+    "question": "Cât și cât de des ați băut? Trecut:",
+    "answer": "\nÎntre 20 și 36 de ani:\nM-am căsătorit la vârsta de 28 de ani și am locuit în România. În această perioadă, beam de două ori pe lună 3-4 halbe de bere și un shot dublu, de obicei în weekend, la ocazii speciale sau la restaurant.\n\nDe la 36 la 40 de ani:\nLa 36 de ani, când am venit în Germania, comportamentul meu de băut s-a schimbat negativ. Am început să consum alcool regulat, iar cantitățile au crescut. După muncă, mai ales vinerea, beam 2-3 beri cu colegii mei. În weekend, consumam adesea 5-6, 7-8, uneori chiar și 10-12 beri și, în plus, și țuică.\n\nCantități maxime:\nCam la fiecare trei luni aveam faze extreme de băut, în care consumam până la 16 beri și 5 shot-uri duble, adică aproximativ de patru ori pe an.\n\nExplicație: Este extrem de important să prezinți istoricul consumului cât mai complet și detaliat posibil. Acest lucru arată că te-ai confruntat intens cu comportamentul tău de băut și că ai recunoscut problema.\n"
+  },
+  {
+    "question": "De ce ați băut? Cauze?",
+    "answer": "\n * Cauza a stat în trecutul meu și în modul meu de gândire.\n * În România, părinții mei erau adesea preocupați de ei înșiși. Deși aveau timp pentru noi, uneori mă simțeam neglijat.\n * Când m-am mutat în Germania în 2019, la 36 de ani, a fost o perioadă grea: mă simțeam nemulțumit, separarea de soția mea, de copiii mei și de părinții mei mă împovăra foarte mult. Mă simțeam singur și pierdut.\n * Am început să consum alcool în mod regulat, inițial chiar și singur, pentru a-mi amorți sentimentele.\n * Alcoolul m-a ajutat să reduc stresul și să uit de problemele mele.\n * La noul loc de muncă am găsit prieteni români și am început să beau cu ei. În grupul lor mă simțeam acceptat și că fac parte din ceva.\n * Voiam să plac tuturor, nu puteam spune nu și mi-era teamă de respingere.\n * Nu am vorbit cu nimeni despre problemele mele și m-am refugiat din ce în ce mai mult în alcool.\n * În cele din urmă, am pierdut controlul asupra consumului meu de alcool și am intrat într-o spirală descendentă.\nExplicație: Această întrebare este cea mai importantă la MPU. Ea necesită să recunoști și să denumești cauzele interioare și exterioare ale comportamentului tău de băut. Dorința de recunoaștere și de apartenență joacă adesea un rol central. Fără această reflecție profundă nu poate avea loc o schimbare reală.\n"
+  },
+  {
+    "question": "Cum ați gestionat stresul în trecut?",
+    "answer": "În trecut, în România, vorbeam cu familia mea și cu partenera mea.\n"
+  },
+  {
+    "question": "Ce funcție a avut consumul în perioada în care ați băut alcool în exces?",
+    "answer": "\n * Beam alcool pentru a reduce stresul.\n * Consumul m-a ajutat să uit de probleme, cum ar fi separarea de familie și provocările noii mele vieți.\n * Voiam să fiu acceptat și auzit.\n * Noua viață era foarte grea pentru mine și alcoolul părea o soluție pe termen scurt.\n"
+  },
+  {
+    "question": "Cum gestionați stresul în viața dvs. actuală? Cum ați redus stresul?",
+    "answer": "\n * Deschidere: Vorbesc deschis și sincer despre problemele mele.\n * Sprijin: Caut sprijin atunci când am nevoie, fie de la familie, prieteni sau consilieri profesioniști.\n * Stabilirea limitelor: Îmi exprim clar limitele personale și spun nu cu hotărâre, fără sentimente de vinovăție.\n * Strategii sănătoase: Folosesc metode sănătoase pentru a gestiona stresul, cum ar fi sportul, exercițiile de respirație și plimbările în natură.\n * Focus pe aspecte pozitive: Mă concentrez pe activități care îmi aduc bucurie și relaxare.\n"
+  },
+  {
+    "question": "Ce vorbește împotriva faptului că nu ați fost dependent de alcool?",
+    "answer": "\n * Fără simptome de sevraj: Nu am avut simptome fizice sau semne de sevraj când am încetat să beau.\n * Renunțare independentă: Am renunțat să beau fără ajutor extern și fără sprijin terapeutic.\n * Consum moderat în timpul săptămânii: Nu am consumat cantități mari de alcool în timpul săptămânii și nu am băut niciodată dimineața.\n * Fiabilitate: În ciuda comportamentului meu de băut, mi-am îndeplinit întotdeauna în mod fiabil obligațiile profesionale și private.\n * Fără tratament medical: Nu am fost nici într-o clinică de dezintoxicare și nici nu am solicitat ajutor medical pentru a renunța la băut.\nExplicație: Această întrebare este deosebit de înșelătoare. Este important să subliniezi că te-ai aflat într-o stare de abuz, dar, în același timp, să delimitezi clar de ce nu ai fost dependent. Diferența dintre abuz și dependență constă în lipsa simptomelor de sevraj, capacitatea de a renunța independent și menținerea vieții cotidiene și a obligațiilor.\n"
+  },
+  {
+    "question": "Schimbări! Ce s-a schimbat în viața dvs. de când nu mai beți?",
+    "answer": "\nTotul a devenit mai pozitiv! Viața mea s-a îmbunătățit fundamental prin renunțarea la alcool:\n * Bunăstare fizică: Mă simt mai sănătos, am mai multă energie și încep ziua mai în formă.\n * Relații mai bune: Comunicarea cu soția mea s-a îmbunătățit. Vorbim deschis despre probleme și ne sprijinim reciproc.\n * Performanță profesională: La locul de muncă sunt mai performant, mai concentrat și mai fiabil. Am cunoscut colegi noi care nu beau alcool.\n * Redescoperirea hobby-urilor vechi: Mi-am redescoperit pasiunea pentru sport. Mersul cu bicicleta, plimbările cu soția și fiicele mele fac acum parte din viața mea de zi cu zi.\n * Mai mult timp pentru familie: Weekend-urile, care înainte erau marcate de alcool, le petrec acum activ cu familia mea. Facem excursii împreună și ne bucurăm de timpul petrecut împreună.\n * Perspective noi: Viața mea a primit o direcție clară și apreciez fiecare moment mult mai conștient.\nExplicație: Această întrebare este de o importanță centrală la MPU. Scopul este de a arăta că ți-ai schimbat activ viața. Prieteniile noi, un mediu social sănătos, revenirea la hobby-uri vechi sau noi și, mai ales, timpul care înainte era dedicat alcoolului, pe care îl folosești acum în mod util și conștient, sunt factori decisivi pentru o MPU de succes.\n"
+  },
+  {
+    "question": "Care sunt situațiile de risc?",
+    "answer": "\nCrizele de viață (moartea unei persoane dragi, o boală gravă, pierderea locului de muncă etc.):\nMă bazez pe sprijinul familiei și al prietenilor apropiați. Caut ajutor emoțional sau profesional dacă este necesar. Alcoolul nu mai este un mijloc de consolare pentru mine. În schimb, mă concentrez pe soluții sănătoase, cum ar fi activitatea fizică, meditația sau discuțiile cu persoane de încredere.\n\nRevederea cu prieteni vechi care oferă alcool:\nRefuz politicos și spun: „Nu, mulțumesc, nu mai beau alcool.” Dacă presiunea continuă, îmi explic calm motivele și, dacă este necesar, mă retrag din situație.\n\nOferirea de alcool la o petrecere de ziua de naștere sau la o sărbătoare:\n Explic clar că nu mai beau alcool, deoarece am avut experiențe proaste în trecut. Toast cu băuturi nealcoolice și rămân fidel deciziei mele. Dacă situația devine neplăcută, mă retrag.\n\nStres la locul de muncă:\nÎn situații de stres nu apelez la alcool. În schimb, iau pauze scurte, ies la aer curat sau vorbesc cu un coleg. De asemenea, exercițiile de respirație sau sportul mă ajută să reduc stresul.\n\nSingurătate sau plictiseală:\n În trecut consumam alcool când mă simțeam singur sau plictisit. Astăzi am o rutină sănătoasă: Mă dedic hobby-urilor mele, fac sport sau petrec timp cu familia. Evit să fiu izolat și mă mențin activ ocupat.\n\nSărbători sau evenimente tradiționale:\n La petreceri mă concentrez pe bucuria momentului și nu pe alcool. Îmi aduc băuturi nealcoolice și mă bucur de companie în mod conștient și clar.\n\nPresiune socială într-un nou grup de prieteni:\n Când cunosc oameni noi, sunt sincer de la început: „Nu beau alcool, aceasta este decizia mea personală.” Astfel, previn posibilele discuții sau situații de presiune.\n\nExplicație: Această întrebare este una dintre cele mai importante la MPU. Cine nu poate enumera situații de risc arată lipsă de reflecție și înțelegere. Capacitatea de a recunoaște propriile puncte slabe și de a dezvolta strategii concrete pentru a evita recăderile este crucială pentru o schimbare credibilă.\n"
+  },
+  {
+    "question": "Unde vedeți riscul unei recidive, să comiteți din nou aceeași infracțiune? De ce este minim riscul unei recidive?",
+    "answer": "\nÎn viitor vreau să respect legea, pentru că nu vreau să pun viața nimănui în pericol. Desigur, nimeni nu poate fi 100% sigur că nu va recidiva niciodată.\nRiscul este minim, deoarece:\n * Astăzi vorbesc deschis cu soția și familia mea despre problemele mele și primesc sprijin emoțional.\n * Am un loc de muncă nou, am găsit prieteni noi și investesc mai mult timp în hobby-urile mele.\n * Am învățat să nu mă mai arăt permanent puternic, ci să admit și slăbiciunea și să vorbesc despre ea.\n * Am învățat să spun nu fără sentiment de vinovăție și să nu mai încerc să mulțumesc pe toată lumea.\n * Am recunoscut clar situațiile de risc și sunt conștient de sentimentele și gândurile care m-ar putea aduce în astfel de situații.\n * Înțeleg cauzele consumului meu anterior și lucrez activ la mine pentru a evita modele similare.\nExplicație: Această întrebare este de o importanță centrală la MPU. Este important să menționezi clar strategiile de evitare a recăderilor și să recunoști onest că nimeni nu poate garanta siguranță absolută. Mulți participanți încearcă să se dovedească la MPU susținând că „nu vor mai bea niciodată”. Însă în viață singurul lucru garantat este moartea – poate suna macabru, dar aceasta este realitatea. Decisiv este să recunoști riscul și să lupți conștient împotriva lui.\n"
+  },
+  {
+    "question": "Ce ați învățat în timpul pregătirii pentru MPU?",
+    "answer": "\n    În timpul pregătirii pentru MPU am dobândit multe cunoștințe importante:\n    * Am analizat delictele mele și mi-am recunoscut clar greșelile.\n    * Am înțeles că am gândit: „Nu voi fi prins.”\n    * Am realizat că am fost egoist în comportamentul meu.\n    * Mi-am dat seama că nu am respectat legea conducând sub influența alcoolului.\n    * Am fost un risc pentru mine și pentru ceilalți participanți la trafic.\n    * Înțeleg acum cauzele consumului meu, de exemplu, dorința de recunoaștere și apartenență.\n    * Știu că alcoolul este o otravă pentru nervi și celule și are efecte dăunătoare asupra sănătății.\n    * Am învățat despre memoria adicției – creierul își amintește valorile maxime și le cere din nou.\n    * Înțeleg principiul creșterii toleranței: este necesară o cantitate din ce în ce mai mare de alcool pentru a obține același efect.\n    * Am aflat că alcoolul afectează memoria și duce la o scădere a inteligenței.\n    * Știu riscurile unui consum excesiv de alcool, în special atunci când se consumă cinci sau mai multe pahare într-o singură ocazie.\n    * Am înțeles că riscul unei recăderi poate fi minimizat, dar nu poate fi niciodată complet eliminat.\n    Am discutat despre avantaje și dezavantaje ale diferitelor comportamente și mă simt bine pregătit pentru viitor.\n    Explicație: Este extrem de important să știți ce ați învățat în timpul pregătirii pentru MPU. Este esențial să înțelegeți alcoolul ca o otravă, pericolul dependenței, rolul memoriei adicției și creșterea toleranței. Riscul unei recăderi este întotdeauna prezent – pentru totdeauna. Doar cei care sunt conștienți de această realitate pot lucra activ pentru a preveni recăderile.\n  "
+  },
+  {
+    "question": "Plan de urgență (o listă) după o recădere (dacă beau din nou!)?",
+    "answer": "Numărul de telefon al consilierului MPU, care este disponibil în orice moment!\n\nO listă: Ce se întâmplă dacă continui să beau: datorii, separare, pierderea locului de muncă, boală etc.! Pericolul de a pierde tot ce am realizat până acum! Sănătate, prieteni, sport, bani, hobby-uri!"
+  },
+  {
+    "question": "Vreți neapărat să vă recuperați permisul de conducere?",
+    "answer": "Cred că ar fi frumos dacă mi-aș recupera permisul de conducere.\n\nCu toate acestea, este mai important pentru mine faptul că mi-am schimbat comportamentul, nu mai vreau să reprezint un risc pentru nimeni atunci când particip la trafic. Pentru că nu mai vreau să îmi pun viața în pericol."
+  },
+  {
+    "question": "Aveți ceva de adăugat pentru a încheia?",
+    "answer": "Cred că retragerea permisului de conducere nu este atât de gravă, deoarece este o experiență de învățare pentru mine. \n\nDacă nu mi s-ar fi întâmplat asta, nu aș fi schimbat nimic în viața mea. Sunt recunoscător pentru asta!"
+  },
+  {
+    "question": "Când ați intrat în contact pentru prima dată cu alcoolul și când ați băut pentru prima dată?",
+    "answer": "La vârsta de 14 ani am încercat prima dată o înghițitură de bere. Atunci nu mi-a plăcut deloc!\n"
+  },
+  {
+    "question": "Care au fost aspectele pozitive ale consumului de alcool?",
+    "answer": "În primul rând, a fost plăcut. Mă simțeam relaxat și vesel. Un alt aspect pozitiv a fost că mă simțeam bine în compania prietenilor, deveneam mai vorbăreț și mai deschis. De asemenea, alcoolul avea uneori un efect distractiv și îmi ridica moralul."
+  },
+  {
+    "question": "Care au fost aspectele negative ale consumului de alcool?",
+    "answer": "A doua zi aveam dureri de cap, greață, oboseală și slăbiciune. Eram obosit, demotivat și o persoană complet diferită!"
+  },
+  {
+    "question": "Cu puțin și cu mult alcool?",
+    "answer": "Cu puțin alcool, adică una sau două beri, mă simțeam relaxat și vesel, nu aveam reclamații a doua zi. Cu mult alcool, aproximativ 5-6 beri, lucrurile s-au schimbat. Aveam dureri de cap, greață și oboseală extremă a doua zi. Nu îmi puteam continua activitatea normală."
+  },
+  {
+    "question": "Unde și cu cine ați băut în principal?",
+    "answer": "În principal, am băut alcool în compania prietenilor și colegilor. De obicei, mergeam miercurea și joia seara după serviciu la un bar pentru o bere. În plus, beam la petreceri, nunți sau evenimente importante împreună cu cunoscuții. Așadar, momentele de relaxare din grup erau legate de alcool. În trecut, beam pentru a fi acceptat în grupul de prieteni, exact ca și ei."
+  },
+  {
+    "question": "Ați fost vreodată abordat în legătură cu consumul dvs. de alcool?",
+    "answer": "Da, de mai multe părți (mama și prietena). Că beam prea mult. Dar eu am considerat consumul meu normal. Am ignorat totul. Au existat și dispute din cauza alcoolului. De când am încetat să beau, totul s-a dezvoltat mai pozitiv. Mă înțeleg mai bine cu partenera mea. În plus, sunt mult mai productiv la locul de muncă."
+  },
+  {
+    "question": "Au existat probleme cu prietena sau la locul de muncă din cauza consumului de alcool?",
+    "answer": "Sigur, ne certam adesea din cauza consumului de alcool, la locul de muncă lunea fără putere, obosit, da, aveam probleme cu concentrarea la locul de muncă!"
+  },
+  {
+    "question": "V-ați simțit uneori vinovat din cauza consumului de alcool?",
+    "answer": "Da, sigur! Mai ales când a doua zi aveam o mahmureală mare. Dar două zile mai târziu uitasem deja din nou, știam că trebuie să fac ceva. Totuși, a rămas gândul, nu am făcut nimic."
+  },
+  {
+    "question": "Cum evaluați consumul dvs., ați pierdut vreodată controlul asupra cantităților băute?",
+    "answer": "În trecut, am avut probleme cu alcoolul și am pierdut de mai multe ori controlul asupra cantităților băute, până când m-am îmbătat excesiv. S-a întâmplat de aproximativ patru ori pe an. De obicei beam bere, dar uneori țuică, ceea ce mă scotea mai repede din funcțiune. Trebuie să recunosc că nu știam când să mă opresc."
+  },
+  {
+    "question": "Dacă au existat black-out-uri din cauza consumului excesiv de alcool, adică dacă după o noapte cu consum excesiv de alcool nu vă mai amintiți părți din noaptea în care ați băut excesiv?",
+    "answer": "Da, în perioada în care beam foarte mult alcool, s-au întâmplat de câteva ori black-out-uri după o noapte cu consum excesiv de alcool. Au existat deja câteva părți din noapte pe care nu le mai țineam minte. Acesta a fost un semn clar că depășisem limita sigură și că alcoolul îmi afecta memoria."
+  },
+  {
+    "question": "Ați renunțat în trecut în mod conștient și intenționat la alcool sau mai des pentru o perioadă mai lungă de timp? Ați avut pauze de alcool?",
+    "answer": "Sincer, nu am avut pauze de alcool și nu au existat niciodată încercări de abstinență. Nu, nu m-am abținut în mod conștient și intenționat de la consumul de alcool pentru o perioadă mai lungă de timp. Deși uneori, după o noapte cu mult alcool, îmi dădeam seama că nu controlasem bine situația și că ar trebui să reduc cantitatea, nu am luat măsuri concrete pentru a renunța la el. Greșeala mea a fost că uitam prea repede de problemele pe care le provoca alcoolul, și nu realizam că deja abuzam de el."
+  },
+  {
+    "question": "În ce categorie de băutori vă vedeți astăzi, retrospectiv? Cum ați evaluat comportamentul dvs. de băut până la comiterea faptei?",
+    "answer": "Astăzi mă văd într-un abuz, cantitățile de alcool erau mari și problematice.\n\nScara de la 8. (sub medie - mediu - abuziv - dependent)?\n\n                                          Scara 1 2 3 4 5 6 7 8 9 10"
+  },
+  {
+    "question": "Beți alcool astăzi? Dacă da, ce, cât și cât de des? Beți bere fără alcool? Vă puteți imagina să beți una sau două beri în viitor?",
+    "answer": "Sunt abstinent de mai bine de un an! Nu! Nu, nu beau bere fără alcool, acord o atenție deosebită la ceea ce mănânc și dacă există alcool în băuturi, alimente sau medicamente. În cazul medicamentelor, întreb dacă există alternative fără alcool. Nu! Am probleme cu alcoolul, știu că nu se va termina cu o singură bere!"
+  },
+  {
+    "question": "Ce contact aveți în prezent cu gașca cu care ați băut?",
+    "answer": "Între timp nu mai am niciun contact cu gașca mea. Când mi-am exprimat dorința de a nu mai bea alcool, unii dintre foștii mei prieteni nu m-au putut înțelege sau accepta. Majoritatea întâlnirilor noastre aveau loc în locuri unde se bea alcool. Acum evit astfel de evenimente sau localuri. În cercul meu actual de prieteni, un consum intens de alcool nu ar fi acceptabil."
+  },
+  {
+    "question": "Ați fost un șofer sigur?",
+    "answer": "\n                 Nu, altfel nu aș fi ajuns la MPU, deoarece șoferii foarte buni nu trebuie să meargă la MPU!\n             "
+  },
+  {
+    "question": "Cum evaluați faptul că până la accident nu ați mai avut niciodată un accident major?",
+    "answer": "A fost doar noroc!"
+  },
+  {
+    "question": "De ce există atât de multe reguli și legi?",
+    "answer": "\n        Regulile și legile sunt necesare pentru a ne proteja societatea și pentru a permite o conviețuire pașnică.\n        Am înțeles că regulile nu sunt acolo pentru a ne îngrădi, ci pentru a ne oferi siguranță și orientare.\n        Fără reguli și legi ar exista haos și fiecare ar acționa doar după propriile sale idei.\n         Respectând regulile, nu mă protejez doar pe mine, ci și pe ceilalți.\n        Un comportament respectuos față de reguli și legi creează încredere și stabilitate în societatea noastră.\n        Explicație: Este important să înțelegi de ce există reguli și legi. Ele nu sunt menite să ne îngrădească, ci să ne protejeze pe toți – întreaga societate – și să permită o conviețuire armonioasă.\n    "
+  },
+  {
+    "question": "Cum vă vedeți ca șofer în trecut?",
+    "answer": "Am fost un șofer egoist și neglijent, mă gândeam doar la mine și nu la consecințe! Îmi pare rău!"
+  },
+  {
+    "question": "Ce credeți că este un șofer bun și normal?",
+    "answer": "Un șofer bun este cineva care respectă regulile, este atent, se gândește la ceilalți și nu reprezintă un pericol în trafic!"
+  },
+  {
+    "question": "Câte persoane trebuie să meargă anual la MPU?",
+    "answer": "90.000 de persoane în anul 2019, din cauza alcoolului 40%, droguri și medicamente cu 30%, puncte 18%, restul de 12%."
+  },
+  {
+    "question": "Când ați spus ultima dată nu?",
+    "answer": "Am refuzat un prieten care s-a mutat pentru a cincea oară în doi ani și avea din nou nevoie de oameni pentru a transporta cutii."
+  }
+            ];
+
+         let frageAntwortIndex = 0;
+    const delayBetweenEntries = 5000;
+    let isPaused = false;  // << NEU: Flag für Pause-Status
+
+    // Funktion, die alle 5s aufgerufen wird
+    function addMpuFrageAntwort() {
+        // 1) Abbrechen, falls pausiert
+        if (isPaused) return;
+
+        // 2) Falls nicht pausiert, neuen Eintrag ausgeben
+        if (frageAntwortIndex < mpuFragenAntworten.length) {
+            const qaPair = mpuFragenAntworten[frageAntwortIndex];
+
+            const frageElement = document.createElement('p');
+            frageElement.classList.add('question');
+            frageElement.textContent = qaPair.question;
+            mpuFragenLog.appendChild(frageElement);
+
+            setTimeout(() => {
+                const antwortElement = document.createElement('p');
+                antwortElement.classList.add('answer');
+                antwortElement.textContent = qaPair.answer;
+                mpuFragenLog.appendChild(antwortElement);
+                mpuFragenLog.scrollTop = mpuFragenLog.scrollHeight; 
+            }, 2000);
+
+            frageAntwortIndex++;
+        } else {
+            // Optional: Wieder von vorne beginnen
+            frageAntwortIndex = 0;
+        }
+    }
+
+    // setInterval ruft addMpuFrageAntwort() alle 5s auf
+    let intervalId = setInterval(addMpuFrageAntwort, delayBetweenEntries);
+
+    // Buttons
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+
+    pauseBtn.addEventListener('click', function() {
+        // NICHT mehr clearInterval(intervalId);
+        // sondern nur die Ausgabe pausieren
+        isPaused = true;
+    });
+
+    resumeBtn.addEventListener('click', function() {
+        // Pause aufheben, damit es weitergeht
+        isPaused = false;
+    });
+
+    // Gleich zum Start die erste Frage ausgeben
+    addMpuFrageAntwort();
+});
+</script>
+</body>
+</html>
